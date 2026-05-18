@@ -7,6 +7,7 @@
 	const isVideoSource = $derived(
 		src &&
 			(src.startsWith('data:video/') ||
+				src.includes('/api/video?') ||
 				/\.(mp4|webm|ogg|mov)$/i.test(src.split('?')[0].split('#')[0]) ||
 				/=(m\d+|dv)$/i.test(src))
 	);
@@ -88,7 +89,7 @@
 					d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
 				/>
 			</svg>
-			<span class="text-xs font-medium text-slate-400">Failed to load image</span>
+			<span class="text-xs font-medium text-slate-400">Failed to load media</span>
 		</div>
 	{/if}
 
@@ -96,7 +97,7 @@
 	{#if isVideoSource}
 		<video
 			{src}
-			referrerpolicy="no-referrer"
+			preload="metadata"
 			class="h-full w-full object-cover transition-all duration-700 ease-out"
 			class:opacity-0={!loaded}
 			class:opacity-100={loaded}
@@ -104,7 +105,8 @@
 			muted
 			loop
 			playsinline
-			onloadeddata={() => (loaded = true)}
+			onloadedmetadata={() => (loaded = true)}
+			oncanplay={() => (loaded = true)}
 			onerror={() => (errorState = true)}
 		></video>
 	{:else}

@@ -53,4 +53,10 @@ The visual board is categorized using semesters and people tags to filter the co
 
 ---
 
+## Video Guardrail
+
+- Google Photos video items must stay rendered as `<video>`, not `<img>`.
+- Treat Google Photos `=dv` links and local `/api/video?...` links as video sources in both the grid card and modal.
+- If video delivery needs indirection, prefer a same-origin proxy/streaming route over brittle direct URL rewrites.
+
 _Created with 💜 to lock in the memories forever._

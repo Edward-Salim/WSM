@@ -41,10 +41,10 @@ export async function GET() {
 
 		const photos = [];
 
-		mediaItems.forEach((item, index) => {
+		for (const [index, item] of mediaItems.entries()) {
 			// Direct high-res image URL is inside item[1][0]
 			const baseUrl = item[1]?.[0];
-			if (!baseUrl || !baseUrl.startsWith('https://lh3.googleusercontent.com/')) return;
+			if (!baseUrl || !baseUrl.startsWith('https://lh3.googleusercontent.com/')) continue;
 
 			// Google Photos uses item[1][8][2] === 2 or an object at item[9] with a video metadata key "76647426"
 			const isVideo = item[1]?.[8]?.[2] === 2 || (item[9] && item[9]['76647426'] !== undefined);
@@ -82,11 +82,11 @@ export async function GET() {
 				id,
 				title: `Memory #${index + 1}`,
 				description: 'Synced automatically from collaborative shared album',
-				url: optimizedUrl,
+				url: isVideo ? `/api/video?src=${encodeURIComponent(optimizedUrl)}` : optimizedUrl,
 				tags,
 				ratio
 			});
-		});
+		}
 
 		return json({ authenticated: true, photos, source: 'scraper' });
 	} catch (error) {

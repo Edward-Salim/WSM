@@ -7,6 +7,7 @@
 		return (
 			url &&
 			(url.startsWith('data:video/') ||
+				url.includes('/api/video?') ||
 				/\.(mp4|webm|ogg|mov)$/i.test(url.split('?')[0].split('#')[0]) ||
 				/=(m\d+|dv)$/i.test(url))
 		);
@@ -229,7 +230,7 @@
 		<img
 			src="/fasilkom.png"
 			alt="Fasilkom UI Logo"
-			class="mr-4 mb-5 h-10 w-auto cursor-pointer object-contain opacity-80 brightness-95 filter transition-all duration-300 select-none hover:scale-105 hover:opacity-100 hover:brightness-100 sm:h-12"
+			class="mr-3 mb-5 h-10 w-auto cursor-pointer object-contain opacity-80 brightness-95 filter transition-all duration-300 select-none hover:scale-105 hover:opacity-100 hover:brightness-100 sm:h-12"
 		/>
 		<h1
 			class="font-display mb-3 bg-linear-to-r from-indigo-300 via-violet-300 to-fuchsia-300 bg-clip-text text-5xl font-extrabold tracking-[0.35em] text-transparent uppercase drop-shadow-[0_2px_10px_rgba(139,92,246,0.15)] filter sm:text-7xl"
@@ -315,9 +316,9 @@
 
 	<!-- Footer -->
 	<footer
-		class="pointer-events-none mt-8 w-full border-t border-white/5 pt-3 pb-0 text-center select-none"
+		class="pointer-events-none mt-8 w-full border-t border-white/5 pt-3 pb-0 text-right select-none"
 	>
-		<div class="flex flex-col items-center justify-center gap-0.5">
+		<div class="flex flex-col items-end justify-center gap-0.5">
 			<h2
 				class="font-display bg-linear-to-r from-violet-400 via-fuchsia-400 to-indigo-400 bg-clip-text text-base font-extrabold tracking-tight text-transparent"
 			>
@@ -393,9 +394,9 @@
 				<!-- svelte-ignore a11y_media_has_caption -->
 				<video
 					src={selectedImage.url}
-					referrerpolicy="no-referrer"
 					class="max-h-[80vh] max-w-[90vw] rounded-xl object-contain"
 					controls
+					preload="metadata"
 					autoplay
 					loop
 					playsinline
