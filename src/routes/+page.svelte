@@ -271,17 +271,17 @@
 		>
 			W S M
 		</h1>
-		<p class="font-sans text-xs font-medium tracking-[0.25em] text-slate-500 uppercase">
-			Wang Siu Mek • FASILKOM UI 2022
-		</p>
+		<div class="font-sans text-xs font-medium tracking-[0.25em] text-slate-500 uppercase">
+			<p class="sm:hidden">Wang Siu Mek</p>
+			<p class="sm:hidden">Fasilkom UI 2022</p>
+			<p class="hidden sm:block">Wang Siu Mek • FASILKOM UI 2022</p>
+		</div>
 	</header>
 
 	<!-- Tag Pills Category Row -->
 	<section class="pointer-events-auto mx-auto mb-12 w-full max-w-5xl">
-		<div class="-mx-4 overflow-hidden sm:mx-0">
-			<div
-				class="no-scrollbar flex items-center justify-start gap-2 overflow-x-auto px-4 pb-2 sm:justify-center sm:px-0"
-			>
+		<div class="px-4 sm:px-0">
+			<div class="flex flex-wrap items-center justify-center gap-2 pb-2">
 			{#each allTags as tag (tag.name)}
 				<button
 					onclick={() => (filterTag = tag.name)}
