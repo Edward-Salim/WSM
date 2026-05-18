@@ -1,14 +1,15 @@
 # WSM Memory Hub (Wang Siu Mek) 🎓⚡
 
-Welcome to the official memory capsule of the **WSM (Wang Siu Mek)** gang! 
+Welcome to the official memory capsule of the **WSM (Wang Siu Mek)** gang!
 
 This digital board is dedicated to preserving the friendship, visual stories, inside jokes, and unforgettable moments shared by WSM.
 
 ## 🌟 The Origin
-* **Gang Name**: WSM (Wang Siu Mek)
-* **Faculty**: Faculty of Computer Science (Fasilkom)
-* **Angkatan**: 2022
-* **Institution**: Universitas Indonesia (UI) 🇮🇩
+
+- **Gang Name**: WSM (Wang Siu Mek)
+- **Faculty**: Faculty of Computer Science (Fasilkom)
+- **Angkatan**: 2022
+- **Institution**: Universitas Indonesia (UI) 🇮🇩
 
 ---
 
@@ -36,17 +37,20 @@ Below are the elite squad members of WSM:
 The visual board is categorized using semesters and people tags to filter the collage:
 
 ### 🗓️ Semesters
-* `SEM 1`
-* `SEM 2`
-* `SEM 3`
-* `SEM 4`
-* `SEM 5`
-* `SEM 6`
-* `SEM 7`
-* `SEM 8`
+
+- `SEM 1`
+- `SEM 2`
+- `SEM 3`
+- `SEM 4`
+- `SEM 5`
+- `SEM 6`
+- `SEM 7`
+- `SEM 8`
 
 ### 👥 People
-* `Julian`, `Ewod`, `Riftek`, `Kelvin`, `Zaim`, `Kusoy`, `Fakrob`, `Ari`, `Vintod`, `Resa`, `Torik`, `Mikel`
+
+- `Julian`, `Ewod`, `Riftek`, `Kelvin`, `Zaim`, `Kusoy`, `Fakrob`, `Ari`, `Vintod`, `Resa`, `Torik`, `Mikel`
 
 ---
-*Created with 💜 to lock in the memories forever.*
+
+_Created with 💜 to lock in the memories forever._
