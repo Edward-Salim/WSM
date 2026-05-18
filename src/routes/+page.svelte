@@ -221,7 +221,7 @@
 </div>
 
 <main
-	class="pointer-events-none relative z-30 mx-auto flex min-h-screen max-w-7xl flex-col px-4 pt-16 pb-2 sm:px-6 lg:px-8"
+	class="pointer-events-none relative z-30 mx-auto flex min-h-screen max-w-7xl flex-col px-4 pt-16 pb-32 sm:px-6 sm:pb-6 lg:px-8"
 >
 	<!-- Header Section -->
 	<header
