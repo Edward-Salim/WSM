@@ -19,6 +19,7 @@
 	let selectedImage = $state(null);
 	let googlePhotos = $state([]);
 	let isLoading = $state(true);
+	let isClosingFromHistory = false;
 
 	// Dragging states for floating WSM member bubbles
 	let dragStates = $state(floatingMembers.map(() => ({ x: 0, y: 0, isDragging: false })));
@@ -97,6 +98,21 @@
 		} finally {
 			isLoading = false;
 		}
+
+		if (typeof window !== 'undefined') {
+			const handlePopState = () => {
+				if (selectedImage) {
+					isClosingFromHistory = true;
+					selectedImage = null;
+				}
+			};
+
+			window.addEventListener('popstate', handlePopState);
+
+			return () => {
+				window.removeEventListener('popstate', handlePopState);
+			};
+		}
 	});
 
 	// Derived values using Svelte 5 reactive getters
@@ -172,8 +188,26 @@
 	// Global key listener
 	function handleKeydown(e) {
 		if (e.key === 'Escape') {
-			selectedImage = null;
+			closeSelectedImage();
 		}
+	}
+
+	function openSelectedImage(img) {
+		selectedImage = img;
+		if (typeof window !== 'undefined') {
+			window.history.pushState({ lightbox: true }, '');
+		}
+	}
+
+	function closeSelectedImage() {
+		if (!selectedImage) return;
+		if (typeof window !== 'undefined' && !isClosingFromHistory) {
+			window.history.back();
+			return;
+		}
+
+		isClosingFromHistory = false;
+		selectedImage = null;
 	}
 </script>
 
@@ -244,7 +278,10 @@
 
 	<!-- Tag Pills Category Row -->
 	<section class="pointer-events-auto mx-auto mb-12 w-full max-w-5xl">
-		<div class="no-scrollbar flex items-center justify-center gap-2 overflow-x-auto pb-2">
+		<div class="-mx-4 overflow-hidden sm:mx-0">
+			<div
+				class="no-scrollbar flex items-center justify-start gap-2 overflow-x-auto px-4 pb-2 sm:justify-center sm:px-0"
+			>
 			{#each allTags as tag (tag.name)}
 				<button
 					onclick={() => (filterTag = tag.name)}
@@ -264,6 +301,7 @@
 					<span>#{tag.name}</span>
 				</button>
 			{/each}
+			</div>
 		</div>
 	</section>
 
@@ -307,7 +345,7 @@
 						description={img.description}
 						tags={img.tags}
 						ratio={img.ratio}
-						onclick={() => (selectedImage = img)}
+						onclick={() => openSelectedImage(img)}
 					/>
 				{/each}
 			</div>
@@ -336,7 +374,7 @@
 		role="dialog"
 		aria-modal="true"
 		tabindex="-1"
-		onclick={() => (selectedImage = null)}
+		onclick={closeSelectedImage}
 	>
 		<!-- Top Bar Controls inside Modal (Minimalist floating bar) -->
 		<div
@@ -367,7 +405,7 @@
 
 				<!-- Close Button -->
 				<button
-					onclick={() => (selectedImage = null)}
+					onclick={closeSelectedImage}
 					class="pointer-events-auto rounded-full border border-white/5 bg-slate-900/60 p-2 text-slate-400 backdrop-blur-md transition-all hover:bg-slate-800/60 hover:text-white"
 					aria-label="Close image"
 				>
