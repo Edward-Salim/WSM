@@ -10,6 +10,7 @@
 	let duration = $state(0);
 	let audio = $state(null);
 	let hasLoadedTracks = $state(false);
+	let pendingAutoplay = $state(false);
 
 	const currentTrack = $derived(tracks[currentTrackIndex] ?? null);
 
@@ -41,21 +42,36 @@
 				await audio.play();
 				isPlaying = true;
 			} catch (error) {
+				pendingAutoplay = true;
 				console.warn('Autoplay blocked or play interrupted:', error);
 			}
 		}
 	});
+
+	async function tryPendingAutoplay() {
+		if (!pendingAutoplay || !audio || !currentTrack || isPlaying) return;
+
+		try {
+			await audio.play();
+			isPlaying = true;
+			pendingAutoplay = false;
+		} catch (error) {
+			console.warn('Deferred autoplay blocked or play interrupted:', error);
+		}
+	}
 
 	function togglePlay() {
 		if (!audio || !currentTrack) return;
 		if (isPlaying) {
 			audio.pause();
 			isPlaying = false;
+			pendingAutoplay = false;
 		} else {
 			audio
 				.play()
 				.then(() => {
 					isPlaying = true;
+					pendingAutoplay = false;
 				})
 				.catch((err) => {
 					console.warn('Autoplay blocked or play interrupted:', err);
@@ -76,6 +92,7 @@
 					.play()
 					.then(() => {
 						isPlaying = true;
+						pendingAutoplay = false;
 					})
 					.catch((err) => console.warn(err));
 			}
@@ -95,6 +112,7 @@
 					.play()
 					.then(() => {
 						isPlaying = true;
+						pendingAutoplay = false;
 					})
 					.catch((err) => console.warn(err));
 			}
@@ -125,14 +143,15 @@
 		progress = audio.currentTime;
 	}
 
-	// Format time (seconds to mm:ss)
-	function formatTime(secs) {
-		if (isNaN(secs)) return '0:00';
-		const minutes = Math.floor(secs / 60);
-		const seconds = Math.floor(secs % 60);
-		return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-	}
 </script>
+
+<svelte:window
+	onclick={tryPendingAutoplay}
+	onkeydown={tryPendingAutoplay}
+	ontouchstart={tryPendingAutoplay}
+	onwheel={tryPendingAutoplay}
+	onscroll={tryPendingAutoplay}
+/>
 
 <div class="pointer-events-auto fixed bottom-6 left-1/2 z-40 w-[min(80vw,20.5rem)] -translate-x-1/2 select-none">
 	<!-- Audio element -->
@@ -214,11 +233,6 @@
 					style="width: {(progress / (duration || 1)) * 100}%"
 				></div>
 			</button>
-
-			<div class="flex items-center justify-between font-mono text-[9px] text-white/70 select-none">
-				<span>{formatTime(progress)}</span>
-				<span>{formatTime(duration)}</span>
-			</div>
 		</div>
 
 		<div class="flex shrink-0 items-center gap-1 border-l border-white/5 pl-2.5">
