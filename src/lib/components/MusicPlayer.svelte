@@ -41,49 +41,62 @@
 
 	let currentScrollY = 0;
 
+	// Ease-in curve: ramps from 0→1 over ~800ms so scroll feels like it has inertia
+	function easeIn(t) {
+		// Cubic ease-in clamped to [0, 1]
+		return Math.min(t * t * t, 1);
+	}
+
 	function startAutoScroll() {
 		if (typeof window === 'undefined') return;
 		stopAutoScroll();
 
 		currentScrollY = window.scrollY;
 		let lastTimestamp = null;
-		
+		let startTimestamp = null;
+		const RAMP_MS = 800; // ms to reach full speed
+		const FULL_SPEED = 0.22; // px/ms at full speed
+
 		function scrollStep(timestamp) {
 			if (!isAutoScrolling) return;
-			
+
 			if (lastTimestamp === null) {
 				lastTimestamp = timestamp;
+				startTimestamp = timestamp;
+				autoScrollInterval = requestAnimationFrame(scrollStep);
+				return;
 			}
-			
-			const elapsed = timestamp - lastTimestamp;
+
+			const elapsed = Math.min(timestamp - lastTimestamp, 64);
 			lastTimestamp = timestamp;
-			
-			if (elapsed > 0) {
-				// If actual scroll position differs (indicating manual user scroll/snap),
-				// sync our accumulator to avoid jarring jumpback snapping!
-				if (Math.abs(window.scrollY - currentScrollY) > 4) {
-					currentScrollY = window.scrollY;
-				}
-				
-				const distance = elapsed * 0.18;
-				currentScrollY += distance;
-				
-				// Scroll to absolute sub-pixel position
-				window.scrollTo(0, currentScrollY);
-				
-				// Handle reaching bottom of scrapbook
-				const isBottom = (window.innerHeight + window.scrollY) >= (document.documentElement.scrollHeight - 2);
-				if (isBottom) {
-					isAutoScrolling = false;
-					stopAutoScroll();
-					isAtBottom = true;
-					return;
-				}
+
+			// Ease-in ramp: speed goes 0 → FULL_SPEED over RAMP_MS
+			const age = timestamp - startTimestamp;
+			const speed = FULL_SPEED * easeIn(age / RAMP_MS);
+
+			// Re-sync if user manually scrolled
+			if (Math.abs(window.scrollY - currentScrollY) > 8) {
+				currentScrollY = window.scrollY;
 			}
-			
+
+			currentScrollY += elapsed * speed;
+
+			// Object form forces the browser to honour the float (no integer quantization)
+			window.scrollTo({ left: 0, top: currentScrollY, behavior: 'instant' });
+
+			// Stop at bottom
+			const isBottom =
+				window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2;
+			if (isBottom) {
+				isAutoScrolling = false;
+				stopAutoScroll();
+				isAtBottom = true;
+				return;
+			}
+
 			autoScrollInterval = requestAnimationFrame(scrollStep);
 		}
-		
+
 		autoScrollInterval = requestAnimationFrame(scrollStep);
 	}
 
