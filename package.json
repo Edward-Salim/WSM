@@ -9,7 +9,8 @@
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",
 		"lint": "prettier --check . && eslint .",
-		"format": "prettier --write ."
+		"format": "prettier --write .",
+		"sync-photos": "node sync-photos.js"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^2.0.4",
@@ -28,6 +29,7 @@
 		"prettier": "^3.8.1",
 		"prettier-plugin-svelte": "^3.5.1",
 		"prettier-plugin-tailwindcss": "^0.7.2",
+		"puppeteer": "^25.0.4",
 		"svelte": "^5.55.2",
 		"tailwindcss": "^4.2.2",
 		"vite": "^8.0.7"

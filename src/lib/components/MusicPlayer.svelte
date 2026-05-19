@@ -1,6 +1,6 @@
 <script>
 	import { CirclePause, CirclePlay } from '@lucide/svelte';
-	import { onMount, tick } from 'svelte';
+	import { onMount, tick, onDestroy } from 'svelte';
 
 	let tracks = $state([]);
 
@@ -11,6 +11,85 @@
 	let audio = $state(null);
 	let hasLoadedTracks = $state(false);
 	let pendingAutoplay = $state(false);
+
+	// Auto Scroll States & Engine
+	let isAutoScrolling = $state(false);
+	let autoScrollInterval = null;
+
+	function toggleAutoScroll() {
+		isAutoScrolling = !isAutoScrolling;
+		if (isAutoScrolling) {
+			startAutoScroll();
+		} else {
+			stopAutoScroll();
+		}
+	}
+
+	let currentScrollY = 0;
+
+	function startAutoScroll() {
+		if (typeof window === 'undefined') return;
+		stopAutoScroll();
+
+		currentScrollY = window.scrollY;
+		let lastTimestamp = null;
+		
+		function scrollStep(timestamp) {
+			if (!isAutoScrolling) return;
+			
+			if (lastTimestamp === null) {
+				lastTimestamp = timestamp;
+			}
+			
+			const elapsed = timestamp - lastTimestamp;
+			lastTimestamp = timestamp;
+			
+			if (elapsed > 0) {
+				// If actual scroll position differs (indicating manual user scroll/snap),
+				// sync our accumulator to avoid jarring jumpback snapping!
+				if (Math.abs(window.scrollY - currentScrollY) > 4) {
+					currentScrollY = window.scrollY;
+				}
+				
+				const distance = elapsed * 0.18;
+				currentScrollY += distance;
+				
+				// Scroll to absolute sub-pixel position
+				window.scrollTo(0, currentScrollY);
+				
+				// Handle reaching bottom of scrapbook
+				const isBottom = (window.innerHeight + window.scrollY) >= (document.documentElement.scrollHeight - 2);
+				if (isBottom) {
+					window.scrollTo({ top: 0, behavior: 'smooth' });
+					isAutoScrolling = false;
+					setTimeout(() => {
+						if (isAutoScrolling === false && autoScrollInterval !== null) {
+							isAutoScrolling = true;
+							currentScrollY = 0;
+							lastTimestamp = performance.now();
+							requestAnimationFrame(scrollStep);
+						}
+					}, 1500);
+					return;
+				}
+			}
+			
+			autoScrollInterval = requestAnimationFrame(scrollStep);
+		}
+		
+		autoScrollInterval = requestAnimationFrame(scrollStep);
+	}
+
+	function stopAutoScroll() {
+		if (autoScrollInterval) {
+			cancelAnimationFrame(autoScrollInterval);
+			autoScrollInterval = null;
+		}
+	}
+
+	onDestroy(() => {
+		stopAutoScroll();
+	});
 
 	const currentTrack = $derived(tracks[currentTrackIndex] ?? null);
 
@@ -153,7 +232,7 @@
 	onscroll={tryPendingAutoplay}
 />
 
-<div class="pointer-events-auto fixed bottom-6 left-1/2 z-40 w-[min(80vw,20.5rem)] -translate-x-1/2 select-none">
+<div class="pointer-events-auto fixed bottom-6 left-1/2 z-40 flex w-[calc(100%-2.5rem)] max-w-[24rem] items-stretch gap-3 -translate-x-1/2 select-none">
 	<!-- Audio element -->
 	<audio
 		bind:this={audio}
@@ -164,8 +243,9 @@
 		onended={handleAudioEnded}
 	></audio>
 
+	<!-- Music Player Main Panel -->
 	<div
-		class="group flex items-center gap-3.5 rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 shadow-2xl shadow-indigo-950/30 backdrop-blur-xl transition-all duration-500 hover:border-violet-500/30"
+		class="group flex flex-1 min-w-0 items-center gap-3.5 rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 shadow-2xl shadow-indigo-950/30 backdrop-blur-xl transition-all duration-500 hover:border-violet-500/30"
 	>
 		<div
 			class="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-slate-900 shadow-lg shadow-black/40"
@@ -276,6 +356,30 @@
 			</button>
 		</div>
 	</div>
+
+	<!-- Auto Scroll Toggle Button -->
+	<button
+		onclick={toggleAutoScroll}
+		class="flex w-12 shrink-0 cursor-pointer items-center justify-center rounded-2xl border transition-all duration-500 shadow-2xl backdrop-blur-xl
+		{isAutoScrolling
+			? 'border-fuchsia-500/40 bg-fuchsia-950/80 text-fuchsia-300 shadow-fuchsia-950/40'
+			: 'border-white/10 bg-slate-950/80 text-slate-400 hover:border-violet-500/30 hover:text-white shadow-black/40'}"
+		aria-label={isAutoScrolling ? 'Stop Auto Scroll' : 'Start Auto Scroll'}
+	>
+		<svg
+			class="h-5 w-5 {isAutoScrolling ? 'animate-bounce-slow text-fuchsia-400' : ''}"
+			fill="none"
+			viewBox="0 0 24 24"
+			stroke="currentColor"
+			stroke-width="2.5"
+		>
+			{#if isAutoScrolling}
+				<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25v13.5m-7.5-13.5v13.5" />
+			{:else}
+				<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 13.5L12 21m0 0l-7.5-7.5M12 21V3" />
+			{/if}
+		</svg>
+	</button>
 </div>
 
 <style>
@@ -290,5 +394,18 @@
 
 	:global(.animate-spin-slow) {
 		animation: spin-slow 10s linear infinite;
+	}
+
+	@keyframes bounce-slow {
+		0%, 100% {
+			transform: translateY(0);
+		}
+		50% {
+			transform: translateY(3px);
+		}
+	}
+
+	:global(.animate-bounce-slow) {
+		animation: bounce-slow 1.4s ease-in-out infinite;
 	}
 </style>

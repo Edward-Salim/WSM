@@ -3,6 +3,7 @@
 	let loaded = $state(false);
 	let errorState = $state(false);
 	let isHovered = $state(false);
+	let videoElement = $state(null);
 
 	const isVideoSource = $derived(
 		src &&
@@ -11,6 +12,32 @@
 				/\.(mp4|webm|ogg|mov)$/i.test(src.split('?')[0].split('#')[0]) ||
 				/=(m\d+|dv)$/i.test(src))
 	);
+
+	// Dynamically play/pause video when it enters/leaves viewport
+	$effect(() => {
+		if (isVideoSource && videoElement && typeof IntersectionObserver !== 'undefined') {
+			const observer = new IntersectionObserver(
+				(entries) => {
+					entries.forEach((entry) => {
+						if (videoElement) {
+							if (entry.isIntersecting) {
+								videoElement.play().catch(() => {});
+							} else {
+								videoElement.pause();
+							}
+						}
+					});
+				},
+				{ threshold: 0.1 }
+			);
+
+			observer.observe(videoElement);
+
+			return () => {
+				observer.disconnect();
+			};
+		}
+	});
 
 	// Sort tags: Years first, followed by people alphabetically, then others
 	const sortedTags = $derived.by(() => {
@@ -96,6 +123,7 @@
 	<!-- Media element (Video or Image) -->
 	{#if isVideoSource}
 		<video
+			bind:this={videoElement}
 			{src}
 			preload="metadata"
 			class="h-full w-full object-cover transition-all duration-700 ease-out"

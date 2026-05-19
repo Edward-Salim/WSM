@@ -354,8 +354,16 @@
 
 	<!-- Footer -->
 	<footer
-		class="pointer-events-none mt-8 w-full border-t border-white/5 pt-3 pb-0 text-right select-none"
+		class="pointer-events-auto mt-8 w-full border-t border-white/5 pt-4 pb-0 flex items-center justify-between select-none"
 	>
+		<!-- Far Left: Dynamic Memory Counter -->
+		<div class="flex items-center">
+			<span class="font-display bg-linear-to-r from-indigo-300 via-violet-300 to-fuchsia-300 bg-clip-text text-sm font-extrabold tracking-[0.2em] text-transparent uppercase">
+				{filteredImages.length} Memories
+			</span>
+		</div>
+
+		<!-- Far Right: Branding & Years -->
 		<div class="flex flex-col items-end justify-center gap-0.5">
 			<h2
 				class="font-display bg-linear-to-r from-violet-400 via-fuchsia-400 to-indigo-400 bg-clip-text text-base font-extrabold tracking-tight text-transparent"
