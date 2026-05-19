@@ -15,8 +15,22 @@
 	// Auto Scroll States & Engine
 	let isAutoScrolling = $state(false);
 	let autoScrollInterval = null;
+	let isAtBottom = $state(false);
+
+	function checkScrollPosition() {
+		if (typeof window === 'undefined') return;
+		// Check if we are near/at the bottom of the page (within 10px)
+		isAtBottom = (window.innerHeight + window.scrollY) >= (document.documentElement.scrollHeight - 10);
+	}
 
 	function toggleAutoScroll() {
+		if (isAtBottom) {
+			window.scrollTo({ top: 0, behavior: 'smooth' });
+			isAutoScrolling = false;
+			stopAutoScroll();
+			return;
+		}
+
 		isAutoScrolling = !isAutoScrolling;
 		if (isAutoScrolling) {
 			startAutoScroll();
@@ -60,16 +74,9 @@
 				// Handle reaching bottom of scrapbook
 				const isBottom = (window.innerHeight + window.scrollY) >= (document.documentElement.scrollHeight - 2);
 				if (isBottom) {
-					window.scrollTo({ top: 0, behavior: 'smooth' });
 					isAutoScrolling = false;
-					setTimeout(() => {
-						if (isAutoScrolling === false && autoScrollInterval !== null) {
-							isAutoScrolling = true;
-							currentScrollY = 0;
-							lastTimestamp = performance.now();
-							requestAnimationFrame(scrollStep);
-						}
-					}, 1500);
+					stopAutoScroll();
+					isAtBottom = true;
 					return;
 				}
 			}
@@ -89,6 +96,9 @@
 
 	onDestroy(() => {
 		stopAutoScroll();
+		if (typeof window !== 'undefined') {
+			window.removeEventListener('resize', checkScrollPosition);
+		}
 	});
 
 	const currentTrack = $derived(tracks[currentTrackIndex] ?? null);
@@ -124,6 +134,11 @@
 				pendingAutoplay = true;
 				console.warn('Autoplay blocked or play interrupted:', error);
 			}
+		}
+
+		if (typeof window !== 'undefined') {
+			window.addEventListener('resize', checkScrollPosition);
+			checkScrollPosition();
 		}
 	});
 
@@ -229,7 +244,10 @@
 	onkeydown={tryPendingAutoplay}
 	ontouchstart={tryPendingAutoplay}
 	onwheel={tryPendingAutoplay}
-	onscroll={tryPendingAutoplay}
+	onscroll={() => {
+		tryPendingAutoplay();
+		checkScrollPosition();
+	}}
 />
 
 <div class="pointer-events-auto fixed bottom-6 left-1/2 z-40 flex w-[calc(100%-2.5rem)] max-w-[24rem] items-stretch gap-3 -translate-x-1/2 select-none">
@@ -364,7 +382,7 @@
 		{isAutoScrolling
 			? 'border-fuchsia-500/40 bg-fuchsia-950/80 text-fuchsia-300 shadow-fuchsia-950/40'
 			: 'border-white/10 bg-slate-950/80 text-slate-400 hover:border-violet-500/30 hover:text-white shadow-black/40'}"
-		aria-label={isAutoScrolling ? 'Stop Auto Scroll' : 'Start Auto Scroll'}
+		aria-label={isAutoScrolling ? 'Stop Auto Scroll' : isAtBottom ? 'Scroll to Top' : 'Start Auto Scroll'}
 	>
 		<svg
 			class="h-5 w-5 {isAutoScrolling ? 'animate-bounce-slow text-fuchsia-400' : ''}"
@@ -375,6 +393,8 @@
 		>
 			{#if isAutoScrolling}
 				<path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25v13.5m-7.5-13.5v13.5" />
+			{:else if isAtBottom}
+				<path stroke-linecap="round" stroke-linejoin="round" d="M4.5 10.5L12 3m0 0l7.5 7.5M12 3v18" />
 			{:else}
 				<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 13.5L12 21m0 0l-7.5-7.5M12 21V3" />
 			{/if}
